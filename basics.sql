@@ -1,4 +1,4 @@
-/*
+
 SELECT * FROM students;
 
 
@@ -21,6 +21,6 @@ SELECT MAX(cgpa) FROM students;
 SELECT SUM(cgpa) FROM students ;
 
 SELECT AVG(cgpa) FROM students;
-*/
+
 SELECT DISTINCT cgpa FROM students;
 
