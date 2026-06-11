@@ -1,4 +1,4 @@
-/*
+
 SELECT department, COUNT(*) AS employee_count 
 FROM employees 
 GROUP BY department;
@@ -21,5 +21,5 @@ GROUP BY department;
 
 SELECT *FROM employees
 ORDER BY age ASC;
-*/
+
 
