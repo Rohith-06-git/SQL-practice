@@ -37,7 +37,7 @@ WITH emp_count AS (
 SELECT * FROM emp_count; 
 
 
--- Multiple CTE
+Multiple CTE
 
 -- Q.First CTE: Calculate average salary per department.
 --  Second CTE: Keep only departments whose average salary is above 60,000.
@@ -71,4 +71,48 @@ WITH emp_count AS (
 
 SELECT * FROM updated_emp ;
 
+
+-- CTE + JOIN
+
+-- Q. Create a CTE for average salary per department and Join with Departments
+
+WITH avg_sal AS (
+    SELECT department_id,AVG(salary) AS sal 
+    FROM employees
+    GROUP BY department_id
+    )
+
+SELECT a.sal,
+d.department_name
+FROM avg_sal a 
+LEFT JOIN departments d 
+ON a.department_id = d.department_id ;
+
+-- Q.Create a CTE for employee count per department Join with Departments.
+
+WITH emp_count AS (
+    SELECT department_id,COUNT(*) AS updated_emp
+    FROM employees
+    GROUP BY department_id
+  )
+
+SELECT e.updated_emp,
+d.department_name
+FROM emp_count e 
+LEFT JOIN departments d
+ON e.department_id = d.department_id ;
+
+-- Q. Using a CTE, find employees earning more than their department's average salary.
+
+WITH avg_sal AS (
+    SELECT department_id,AVG(salary) as sal
+    FROM employees
+    GROUP BY department_id
+)
+SELECT e.salary ,
+e.name 
+FROM avg_sal a 
+INNER JOIN employees e 
+ON a.department_id = e.department_id
+WHERE e.salary > a.sal ;
 
