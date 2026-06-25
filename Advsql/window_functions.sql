@@ -31,4 +31,31 @@ SELECT department_id,
         ) AS rn 
 FROM employees ;
 
+-- Q. Find highest-paid employee in each department.
+
+SELECT * FROM
+    ( SELECT name,
+         salary ,
+         department_id,
+         RANK() OVER (
+             PARTITION BY department_id
+             ORDER BY salary DESC
+            ) AS rn
+    FROM employees ) AS t
+    WHERE rn = 1 ;
+
+-- Q.Find top 3 salaries in each department.
+
+SELECT * FROM (
+    SELECT  name,
+            salary,
+            department_id,
+            RANK() OVER(
+                PARTITION BY department_id
+                ORDER BY salary DESC
+                )AS rn 
+    FROM employees 
+    ) AS t 
+WHERE rn < 4 ;
+
 
