@@ -1,10 +1,11 @@
-SELECT * FROM
-(SELECT name,
+ -- LAG()
+ -- Q. Find how much salary increased compared to the previous employee within each department 
+SELECT name,
        salary,
        department_id,
-       DENSE_RANK() OVER(
+       salary - LAG(salary) OVER(
         PARTITION BY department_id
-        ORDER BY salary DESC
-       ) AS ms
-FROM employees ) AS t
-WHERE ms = 1
+        ORDER BY salary ASC
+       ) AS ms 
+FROM employees ;
+
