@@ -9,3 +9,15 @@ SELECT name,
        ) AS ms 
 FROM employees ;
 
+-- LEAD()
+-- Q. Find employees whose salary is lower than the next employee within dept.
+SELECT name,
+       salary,
+       department_id,
+       salary - LEAD(salary) OVER(
+        PARTITION BY department_id
+        ORDER BY salary DESC 
+        ) AS ms
+FROM employees;
+
+
