@@ -119,6 +119,6 @@ SELECT * FROM
         ORDER BY salary DESC
        ) AS ms
 FROM employees ) AS t
-WHERE ms = 1
+WHERE ms = 1 ;
 
 
