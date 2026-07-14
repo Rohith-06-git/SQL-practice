@@ -73,3 +73,20 @@ SELECT * FROM
 FROM employees 
 ) AS t
 WHERE ms = 5 ;
+
+-- SUM() , AVG() , MIN() , MAX()
+SELECT department_id,
+        salary,
+        SUM(salary) OVER(
+                ORDER BY salary ASC
+        ) AS rm
+FROM employees ; 
+
+-- Q. 3-row Moving Average
+SELECT department_id,
+        salary,
+         AVG(salary) OVER(
+                ORDER BY salary ASC
+                ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        ) AS rm
+FROM employees ; 
