@@ -89,4 +89,5 @@ SELECT department_id,
                 ORDER BY salary ASC
                 ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
         ) AS rm
-FROM employees ; 
+FROM employees ;  
+
