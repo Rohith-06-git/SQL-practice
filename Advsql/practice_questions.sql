@@ -67,3 +67,73 @@ FROM employees e
 JOIN avg_salary a
 ON e.department_id = a.department_id
 WHERE e.salary > a.avg_sal;
+
+-- Q4. Find customer(s) who placed the highest number of orders.
+WITH order_count AS (
+    SELECT customer_id,
+           COUNT(*) AS total_orders
+    FROM orders
+    GROUP BY customer_id
+)
+SELECT c.name,
+       oc.total_orders
+FROM customers c
+JOIN order_count oc
+ON c.customer_id = oc.customer_id
+WHERE oc.total_orders = (
+    SELECT MAX(total_orders)
+    FROM order_count
+);
+
+-- Q5. Find employees earning the highest salary in each department.
+-- Window Function
+
+WITH hs AS (
+    SELECT name,
+           salary,
+           department_id,
+           DENSE_RANK() OVER (
+               PARTITION BY department_id
+               ORDER BY salary DESC
+           ) AS hm
+    FROM employees
+)
+SELECT name,
+       salary,
+       department_id
+FROM hs
+WHERE hm = 1;
+
+-- Correlated Subquery
+SELECT name,
+       salary
+FROM employees e
+WHERE salary = (
+    SELECT MAX(salary)
+    FROM employees e2
+    WHERE e.department_id = e2.department_id
+);
+
+Q6. Find customers who placed more than one order.
+-- Using HAVING
+SELECT c.name,
+       COUNT(*) AS total_orders
+FROM customers c
+JOIN orders o
+ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.name
+HAVING COUNT(*) > 1;
+
+-- Using CTE
+WITH hm AS (
+    SELECT customer_id,
+           COUNT(*) AS total_orders
+    FROM orders
+    GROUP BY customer_id
+)
+SELECT c.name,
+       h.total_orders
+FROM customers c
+JOIN hm h
+ON c.customer_id = h.customer_id
+WHERE h.total_orders > 1;
