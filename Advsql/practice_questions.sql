@@ -137,3 +137,85 @@ FROM customers c
 JOIN hm h
 ON c.customer_id = h.customer_id
 WHERE h.total_orders > 1;
+
+-- Q7. Find the second highest salary in each department.
+
+-- Window Function
+WITH ranked AS (
+    SELECT department_id,
+           name,
+           salary,
+           DENSE_RANK() OVER (
+               PARTITION BY department_id
+               ORDER BY salary DESC
+           ) AS rn
+    FROM employees
+)
+SELECT department_id,
+       name,
+       salary
+FROM ranked
+WHERE rn = 2;
+
+--Alternative (Without Window Functions)
+SELECT department_id,
+       name,
+       salary
+FROM employees e
+WHERE salary = (
+    SELECT MAX(salary)
+    FROM employees e2
+    WHERE e.department_id = e2.department_id
+      AND salary < (
+          SELECT MAX(salary)
+          FROM employees e3
+          WHERE e.department_id = e3.department_id
+      )
+);
+
+-- Q8. Find employees who have the same salary as at least one other employee.
+SELECT name,
+       salary
+FROM employees
+WHERE salary IN (
+    SELECT salary
+    FROM employees
+    GROUP BY salary
+    HAVING COUNT(*) > 1
+);
+
+-- Q9. Find the latest hired employee from each department.
+WITH ranked AS (
+    SELECT department_id,
+           name,
+           hire_date,
+           ROW_NUMBER() OVER (
+               PARTITION BY department_id
+               ORDER BY hire_date DESC
+           ) AS rn
+    FROM employees
+)
+SELECT department_id,
+       name,
+       hire_date
+FROM ranked
+WHERE rn = 1;
+
+-- Q10. Find the latest order placed by each customer.
+WITH ranked AS (
+    SELECT order_id,
+           customer_id,
+           order_date,
+           amount,
+           ROW_NUMBER() OVER (
+               PARTITION BY customer_id
+               ORDER BY order_date DESC
+           ) AS rn
+    FROM orders
+)
+SELECT customer_id,
+       order_id,
+       order_date,
+       amount
+FROM ranked
+WHERE rn = 1;
