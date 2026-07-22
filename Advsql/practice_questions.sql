@@ -339,3 +339,91 @@ FROM max_sal
 SELECT customer_id,total_amount
 FROM ranked 
 WHERE rankings = 1 ;
+
+-- Q16.Running Total For each day, show:sale_date,amount,running_total.
+
+SELECT sale_date,
+        amount,
+        SUM(amount) OVER(
+            ORDER BY sale_date ASC
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+            )AS running_total
+FROM sales ;
+
+-- Q17 – Highest Sale Till Date
+
+SELECT sale_date,
+        amount,
+        MAX(amount) OVER(
+            ORDER BY sale_date ASC
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW 
+            ) AS highest_sale_so_far
+FROM sales ;
+
+-- Q18 – Previous Order Difference(
+-- For each customer, display:
+-- customer_id,order_date,amount,previous_amount,difference)
+-- Rules : don't use CTE 
+SELECT customer_id,
+        order_date,
+        amount,
+        previous_amount,
+        amount - previous_amount AS difference
+FROM ( SELECT customer_id,
+        order_date,
+        amount,
+        LAG(amount) OVER(
+            PARTITION BY customer_id
+            ORDER BY order_date ASC
+            ) AS previous_amount
+  FROM orders ) 
+  AS m ; 
+
+-- Without a subquery and CTE
+  SELECT customer_id,
+       order_date,
+       amount,
+       LAG(amount) OVER (
+           PARTITION BY customer_id
+           ORDER BY order_date
+       ) AS previous_amount,
+       amount - LAG(amount) OVER (
+           PARTITION BY customer_id
+           ORDER BY order_date
+       ) AS difference
+FROM orders;
+        
+-- Q19 – Second Latest Order Per Customer
+WITH ranked AS (
+    SELECT customer_id,
+           order_date,
+           amount,
+           ROW_NUMBER() OVER (
+               PARTITION BY customer_id
+               ORDER BY order_date DESC
+           ) AS rn
+    FROM orders
+)
+SELECT customer_id,
+       order_date,
+       amount
+FROM ranked
+WHERE rn = 2;
+
+-- Q20. Find customers whose every order amount is strictly greater than their previous order amount.
+WITH updated AS (SELECT customer_id,
+        amount - LAG(amount) OVER (
+            PARTITION BY customer_id
+            ORDER BY order_date
+        ) AS difference 
+FROM orders )
+
+SELECT customer_id
+FROM updated
+GROUP BY customer_id
+HAVING SUM(
+    CASE 
+        WHEN difference < 0 THEN 1
+        ELSE 0
+    END
+) = 0;
