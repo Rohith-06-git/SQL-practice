@@ -254,4 +254,54 @@ SELECT user_id
 FROM hs 
 GROUP BY user_id,hm 
 HAVING COUNT(*) >= 3 ;
- 
+
+-- Q13 – Department Salary Ranking
+WITH salaries AS
+(SELECT department,
+        name,
+        salary,
+        DENSE_RANK() OVER(
+            PARTITION BY department
+            ORDER BY salary DESC
+            ) AS sal 
+FROM employees 
+)
+
+SELECT department,
+        name,
+        salary
+FROM salaries
+WHERE sal <= 2  ;
+
+-- Q14 – Highest Paid Employee in Each Department.
+
+WITH salaries AS
+(SELECT department,
+        name,
+        salary,
+        DENSE_RANK() OVER(
+            PARTITION BY department
+            ORDER BY salary DESC
+            ) AS sal 
+FROM employees 
+)
+
+SELECT department,
+        name,
+        salary
+FROM salaries
+WHERE sal = 1;
+
+-- WITHOUT Window Functions
+WITH salaries AS 
+(SELECT department,MAX(salary) AS max_sal
+FROM employees 
+GROUP BY department )
+
+SELECT e.department,
+    e.name,e.salary
+FROM employees e 
+JOIN salaries s 
+ON e.department = s.department
+AND e.salary = s.max_sal ;
+
