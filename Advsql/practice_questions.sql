@@ -427,3 +427,29 @@ HAVING SUM(
         ELSE 0
     END
 ) = 0;
+
+-- Q.21 Find customers whose order amounts are always increasing (without using LAG())
+
+WITH ranks AS (
+    SELECT customer_id,
+           order_date,
+           amount,
+           ROW_NUMBER() OVER (
+               PARTITION BY customer_id
+               ORDER BY order_date
+           ) AS rn
+    FROM orders
+)
+
+SELECT r1.customer_id
+FROM ranks r1
+JOIN ranks r2
+    ON r1.customer_id = r2.customer_id
+   AND r1.rn = r2.rn + 1
+GROUP BY r1.customer_id
+HAVING SUM(
+    CASE
+        WHEN r1.amount <= r2.amount THEN 1
+        ELSE 0
+    END
+) = 0;
