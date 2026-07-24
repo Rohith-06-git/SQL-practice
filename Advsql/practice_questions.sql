@@ -453,3 +453,29 @@ HAVING SUM(
         ELSE 0
     END
 ) = 0;
+
+-- Q.Customers Who Placed Orders in Consecutive Months
+WITH months AS (
+    SELECT DISTINCT
+           customer_id,
+           YEAR(order_date) AS year,
+           MONTH(order_date) AS month
+    FROM orders
+),
+ updated AS (
+    SELECT customer_id,
+            year,
+            month,
+            (year * 12 + month) -
+            LAG(year * 12 + month) OVER(
+                PARTITION BY customer_id
+                ORDER BY year,month
+            ) AS difference
+    FROM months
+)
+
+SELECT DISTINCT customer_id
+FROM updated 
+WHERE difference = 1 ;
+
+
