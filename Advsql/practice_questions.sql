@@ -454,7 +454,7 @@ HAVING SUM(
     END
 ) = 0;
 
--- Q.Customers Who Placed Orders in Consecutive Months
+-- Q.22 Customers Who Placed Orders in Consecutive Months
 WITH months AS (
     SELECT DISTINCT
            customer_id,
@@ -478,4 +478,33 @@ SELECT DISTINCT customer_id
 FROM updated 
 WHERE difference = 1 ;
 
+-- Q.23 Find the longest consecutive streak of days each customer placed an order.
 
+WITH no_dup AS (
+    SELECT DISTINCT 
+            customer_id,
+            order_date
+    FROM orders 
+),
+ hs AS (
+    SELECT customer_id,
+            order_date,
+    order_date - INTERVAL ROW_NUMBER() OVER(
+        PARTITION BY customer_id 
+        ORDER BY oder_date ASC
+    ) AS hm
+    FROM no_dup
+),
+
+streak AS (
+    SELECT customer_id,
+            hm,
+            COUNT(*) AS streak_length
+            FROM hs 
+            GROUP BY customer_id,hm
+)
+
+SELECT customer_id,
+        MAX(streak_length) AS longest_streak
+        FROM streak
+        GROUP BY customer_id ;
