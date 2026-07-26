@@ -533,3 +533,74 @@ SELECT customer_id,
             ORDER BY transaction_date,transaction_id
         ) AS running_total
 FROM transactions ;
+
+
+-- Sessionization
+-- Q.26 A new session starts when the gap between two consecutive events is more than 30 minutes.
+
+WITH session AS (
+    SELECT user_id,
+            event_time,
+            LAG(event_time) OVER(
+                PARTITION BY user_id
+                ORDER BY event_time
+            ) AS previous_time
+    FROM user_events
+),
+
+x AS (
+    SELECT
+    user_id,
+    event_time,
+    previous_time,
+    CASE
+        WHEN previous_time IS NULL THEN 1
+        WHEN TIMESTAMPDIFF(MINUTE, previous_time, event_time) > 30 THEN 1
+        ELSE 0
+    END AS new_session
+FROM session
+),
+
+y AS (
+    SELECT user_id,
+            event_time,
+            new_session,
+            SUM(new_session) OVER(
+                PARTITION BY user_id
+                ORDER BY event_time ASC
+            ) AS session_id
+    FROM x
+)
+
+SELECT user_id,
+        event_time,
+        session_id
+FROM y;
+
+-- Q.27 Cohort Analysis
+-- For every customer, find:Their first purchase month (cohort month),The month in which each order occurred.
+--The number of months since their first purchase.
+
+WITH new AS (
+SELECT customer_id,
+        order_date,
+        MIN(order_date) OVER(
+            PARTITION BY customer_id
+        ) AS cohort_month
+FROM Orders
+),
+
+old AS (
+    SELECT customer_id,
+            cohort_month,
+            order_date,
+            TIMESTAMPDIFF(MONTH,cohort_month,order_date) 
+            AS month_number
+    FROM new
+)
+
+SELECT customer_id,
+        cohort_month,  -- DATE_FORMAT(cohort_month, '%Y-%m') AS cohort_month,
+        order_date,    -- DATE_FORMAT(order_date, '%Y-%m') AS order_month,
+        month_number
+FROM old ;
