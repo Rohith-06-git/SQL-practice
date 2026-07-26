@@ -604,3 +604,60 @@ SELECT customer_id,
         order_date,    -- DATE_FORMAT(order_date, '%Y-%m') AS order_month,
         month_number
 FROM old ;
+
+-- Q.28 (Funnel Analysis)Find how many unique users reached each stage of the funnel.
+
+SELECT event_name,COUNT(DISTINCT user_id) AS users
+FROM user_events
+GROUP BY event_name;
+
+-- Q.29 Count only those users who completed the entire funnel.
+
+WITH users AS (
+    SELECT user_id,
+    COUNT(DISTINCT event_name) AS completed
+    FROM user_events
+    GROUP BY user_id
+) 
+
+SELECT COUNT(*) AS completed_users
+FROM users 
+WHERE completed = 3;
+
+-- Q.29.1 Count users who followed exactly:visit -> add to cart -> purchase
+
+ WITH normal AS (
+    SELECT user_id,
+            MIN(CASE WHEN event_name = 'visit' THEN event_time END) visit_time,
+            MIN(CASE WHEN event_name = 'Add to Cart' THEN event_time END) cart_time,
+            MIN(CASE WHEN event_name = 'purchase' THEN event_time END) purchase_time
+            FROM user_events
+            GROUP BY user_id
+    )
+SELECT COUNT(*) AS completed_users
+FROM normal 
+WHERE visit_time IS NOT NULL AND
+cart_time IS NOT NULL AND
+purchase_time IS NOT NULL AND
+visit_time < cart_time AND
+cart_time < purchase_time ;
+
+-- Q.30 (Market Basket Analysis) Find the top product pairs that are purchased together.
+
+SELECT
+    o1.product AS product1,
+    o2.product AS product2,
+    COUNT(*) AS times_bought_together
+FROM orders o1
+JOIN orders o2
+    ON o1.order_id = o2.order_id
+   AND o1.product < o2.product
+GROUP BY
+    o1.product,
+    o2.product
+ORDER BY
+    times_bought_together DESC;
+
+
+
+
