@@ -491,8 +491,8 @@ WITH no_dup AS (
             order_date,
     order_date - INTERVAL ROW_NUMBER() OVER(
         PARTITION BY customer_id 
-        ORDER BY oder_date ASC
-    ) AS hm
+        ORDER BY order_date ASC
+    )DAY AS hm
     FROM no_dup
 ),
 
@@ -508,3 +508,28 @@ SELECT customer_id,
         MAX(streak_length) AS longest_streak
         FROM streak
         GROUP BY customer_id ;
+
+-- Q24.Write a query to display the total sales for the first three months of the year in separate columns.
+
+SELECT
+    customer_id,
+    SUM(CASE WHEN MONTH(order_date) = 1 THEN amount ELSE 0 END) AS Jan,
+    SUM(CASE WHEN MONTH(order_date) = 2 THEN amount ELSE 0 END) AS Feb,
+    SUM(CASE WHEN MONTH(order_date) = 3 THEN amount ELSE 0 END) AS Mar
+FROM orders
+GROUP BY customer_id;
+
+-- Q.25 For each transaction, display the customer's running account balance.
+
+SELECT customer_id,
+        transaction_date,
+        transaction_type,
+        amount,
+        SUM( CASE
+        WHEN transaction_type = 'Credit' THEN amount
+        ELSE -amount
+    END) OVER(
+            PARTITION BY customer_id
+            ORDER BY transaction_date,transaction_id
+        ) AS running_total
+FROM transactions ;
