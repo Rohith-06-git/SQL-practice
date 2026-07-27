@@ -658,6 +658,38 @@ GROUP BY
 ORDER BY
     times_bought_together DESC;
 
+--Customer Retention Analysis
+-- Q.31 Write a query to find the number of repeat customers in each month.
+
+WITH min_date AS (
+    SELECT customer_id,MIN(order_date) AS mini
+    FROM Orders
+    GROUP BY customer_id
+)
+
+SELECT MONTH(o.order_date) AS month,
+       COUNT(DISTINCT o.customer_id) AS repeat_customers
+       FROM orders o
+       JOIN min_date m
+       ON o.customer_id = m.customer_id
+       WHERE DATE_FORMAT(o.order_date, '%Y-%m')
+        <> DATE_FORMAT(m.mini, '%Y-%m')
+       GROUP BY DATE_FORMAT(o.order_date, '%Y-%m')
+       ORDER BY MONTH(o.order_date) ;
+
+-- Q.32 Customers Who Bought Product A But Never Bought Product B
+
+SELECT DISTINCT o.customer_id
+    FROM orders o
+    WHERE product = 'A'
+    AND NOT EXISTS (
+             SELECT b.customer_id
+             FROM orders b 
+                WHERE b.customer_id = o.customer_id
+                AND b.product = 'B'
+            )
+
+
 
 
 
