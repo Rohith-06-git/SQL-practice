@@ -689,7 +689,74 @@ SELECT DISTINCT o.customer_id
                 AND b.product = 'B'
             )
 
+--Q33. First and Last Order for Every Customer
 
+SELECT customer_id,
+        MIN(order_date) AS first_order,
+        MAX(order_date) AS last_order,
+        DATEDIFF(MAX(order_date),MIN(order_date)) AS days_between
+        FROM orders  
+        GROUP BY customer_id
+        ORDER BY customer_id ;
 
+-- METHOD - 2
+WITH new AS (
+    SELECT customer_id,
+            order_date,
+            ROW_NUMBER() OVER(
+                PARTITION BY customer_id
+                ORDER BY order_date 
+            ) AS f_date,
+            ROW_NUMBER() OVER(
+                PARTITION BY customer_id
+                ORDER BY order_date DESC
+            ) AS l_date
+    FROM orders
+)
 
+WITH result AS (
+    SELECT customer_id,
+        MAX(CASE WHEN f_date = 1 THEN order_date END) AS first_date,
+        MAX(CASE WHEN l_date = 1 THEN order_date END) AS last_date
+        FROM new 
+        GROUP BY customer_id 
+    )
 
+SELECT customer_id,
+        first_date,
+        last_date,
+        DATEDIFF(last_date,first_date) AS days_between
+        FROM result 
+        ORDER BY customer_id ;
+
+-- Q.34 Customers Who Bought Every Product
+
+    SELECT customer_id
+    FROM orders 
+    GROUP BY customer_id
+    HAVING COUNT(DISTINCT product_id) = (
+        SELECT COUNT(*) FROM products) ;
+
+-- Q.35 Median Salary by Department
+
+WITH median AS (
+    SELECT department,
+            salary,
+            ROW_NUMBER() OVER(
+                PARTITION BY department
+                ORDER BY salary
+            ) AS rn,
+            COUNT(*) OVER(
+                PARTITION BY department
+            ) AS count
+    FROM employees
+)
+
+SELECT department,
+        AVG(salary) AS median 
+    FROM median 
+    WHERE rn IN (
+        FLOOR((count + 1) /2),
+        CEIL((count + 1) /2)
+    )
+GROUP BY department;
