@@ -760,3 +760,57 @@ SELECT department,
         CEIL((count + 1) /2)
     )
 GROUP BY department;
+
+-- Q.36 Find employees whose salary is greater than their manager's salary.
+
+SELECT e.emp_name
+       e.salary AS employee_salary
+       m.salary AS manager_salary
+       FROM employee e 
+       JOIN employee m 
+       ON e.manager_id = m.emp_id
+       WHERE e.salary > m.salary ;
+
+-- Q.37 Employees Earning More Than Their Department Average
+
+SELECT emp_name,
+        department,
+        salary
+FROM employees e 
+WHERE salary > (
+    SELECT AVG(salary) AS sal 
+            FROM employees m 
+            WHERE e.department = m.department
+) ;
+
+-- with joins 
+SELECT e.emp_name,
+       e.department,
+       e.salary
+FROM employees e
+JOIN (
+    SELECT department,
+           AVG(salary) AS avg_sal
+    FROM employees
+    GROUP BY department
+) d
+ON e.department = d.department
+WHERE e.salary > d.avg_sal;
+
+-- Q.38 Find Each Employee Along with Their Manager's Name
+
+SELECT e.emp_name AS employee,
+        m.emp_name AS manager
+FROM employees e 
+JOIN employees m 
+ON e.manager_id = m.emp_id ;
+
+-- Q.39 Find all pairs of employees who have the same salary.
+
+SELECT e1.emp_name AS employee1,
+        e2.emp_name AS employee2,
+        e1.salary
+FROM employees e1
+JOIN employees e2
+ON e1.salary = e2.salary 
+AND e1.emp_id < e2.emp_id ;
