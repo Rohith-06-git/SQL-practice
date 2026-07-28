@@ -814,3 +814,39 @@ FROM employees e1
 JOIN employees e2
 ON e1.salary = e2.salary 
 AND e1.emp_id < e2.emp_id ;
+
+-- Recursive CTE
+-- Q.40 Write a query to display the complete employee hierarchy.
+
+WITH RECURSIVE emp_hie AS (
+    SELECT  emp_id,
+            emp_name,
+            manager_id,
+            1 AS level 
+            FROM employees
+            WHERE manager_id is NULL
+    
+    UNION ALL 
+
+    SELECT  e.emp_id,
+            e.emp_name ,
+            e.manager_id,
+            m.level + 1
+        FROM employees e
+        JOIN emp_hie m 
+        ON e.manager_id = m.emp_id
+)
+
+SELECT * FROM emp_hie ;
+
+-- Pivot / Conditional Pivot
+-- Q.41 Convert the rows into columns so that each product appears once.
+
+SELECT products,
+        MAX(CASE WHEN quarter = 'q1' THEN amount) AS q1
+        MAX(CASE WHEN quarter = 'q2' THEN amount) AS q2
+        MAX(CASE WHEN quarter = 'q3' THEN amount) AS q3
+        MAX(CASE WHEN quarter = 'q4' THEN amount) AS q4
+
+        FROM sales 
+        GROUP BY product ;
