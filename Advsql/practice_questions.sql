@@ -850,3 +850,5 @@ SELECT products,
 
         FROM sales 
         GROUP BY product ;
+
+        
