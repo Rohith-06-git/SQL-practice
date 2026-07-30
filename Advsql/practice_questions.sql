@@ -851,4 +851,36 @@ SELECT products,
         FROM sales 
         GROUP BY product ;
 
-        
+
+-- Unpivot / Normalization
+-- Q.42 Convert the above table into this normalized format.
+
+SELECT product,
+       'Q1' AS quarter,
+       Q1 AS amount
+FROM sales
+WHERE Q1 IS NOT NULL
+
+UNION ALL
+
+SELECT product,
+       'Q2',
+       Q2
+FROM sales
+WHERE Q2 IS NOT NULL
+
+UNION ALL
+
+SELECT product,
+       'Q3',
+       Q3
+FROM sales
+WHERE Q3 IS NOT NULL
+
+UNION ALL
+
+SELECT product,
+       'Q4',
+       Q4
+FROM sales
+WHERE Q4 IS NOT NULL;
