@@ -884,3 +884,23 @@ SELECT product,
        Q4
 FROM sales
 WHERE Q4 IS NOT NULL;
+
+-- Ranking with Ties (Top-K Including Ties)
+-- Q.43 Find the Top 2 highest-paid employees in each department, including ties.
+
+WITH hm AS(
+        SELECT department,
+        emp_name,
+        salary,
+        DENSE_RANK() OVER(
+            PARTITION BY department
+            ORDER BY salary DESC
+        ) AS parts
+FROM employees 
+)
+SELECT department,
+        emp_name,
+        salary
+FROM hm 
+WHERE parts <= 2 ;
+
