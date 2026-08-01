@@ -904,3 +904,22 @@ SELECT department,
 FROM hm 
 WHERE parts <= 2 ;
 
+
+-- Delete Duplicate Records using CTE
+-- Q.44 Delete duplicate records while keeping only one copy
+
+WITH hm as (
+    SELECT emp_id,
+            emp_name,
+            email,
+            ROW_NUMBER() OVER(
+                PARTITION BY emp_name
+                ORDER BY emp_id ASC 
+            ) AS tally
+    FROM employees
+) 
+
+DELETE FROM hm 
+WHERE tally > 1 ;
+
+
