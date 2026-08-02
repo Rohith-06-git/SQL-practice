@@ -913,13 +913,87 @@ WITH hm as (
             emp_name,
             email,
             ROW_NUMBER() OVER(
-                PARTITION BY emp_name
+                PARTITION BY emp_name,email
                 ORDER BY emp_id ASC 
             ) AS tally
     FROM employees
 ) 
 
-DELETE FROM hm 
-WHERE tally > 1 ;
+DELETE FROM employees
+WHERE emp_id IN (
+    SELECT emp_id 
+    FROM hm 
+    WHERE tally >1
+) ;
 
+-- Update Using Window Functions / CTE
+-- Q.45 Update the bonus column using the following rule:
+-- Highest salary → Bonus = 5000,Second highest salary (including ties) → Bonus = 3000,Everyone else → Bonus = 1000
+
+
+-- SQL Server Version (Supports Updating CTE directly)
+WITH ranks AS (
+    SELECT emp_id,
+           DENSE_RANK() OVER(
+            ORDER BY salary DESC
+           )AS Ordered
+    FROM employees 
+)
+UPDATE e
+SET bonus = CASE
+                WHEN r.ordered = 1 THEN 5000
+                WHEN r.ordered = 2 THEN 3000
+                ELSE 1000
+            END
+FROM employees e 
+JOIN ranks r 
+ON e.emp_id = r.emp_id;
+
+-- MySQL Version (Doesnt Supports Updating CTE directly)
+UPDATE employees e
+JOIN (SELECT emp_id,
+            DENSE_RANK() OVER(
+                ORDER BY salary DESC
+            )AS Ordered
+        FROM employees
+    )r
+ON e.emp_id = r.emp_id
+SET e.bonus = CASE
+                  WHEN r.ordered = 1 THEN 5000
+                  WHEN r.ordered = 2 THEN 3000
+                  ELSE 1000
+              END ;
+
+-- Percentiles / NTILE / Quartiles
+-- Q.46 Assign every employee to one of 4 quartiles.
+
+SELECT emp_name,
+        salary,
+        NTILE(4) OVER(
+            ORDER BY salary 
+        ) AS quartile
+FROM employees ;
+
+-- Q.47 Find the median salary for each department.
+WITH sep AS (
+    SELECT department,
+            salary,
+            ROW_NUMBER() OVER(
+                PARTITION BY department
+                ORDER BY salary
+            ) AS dep,
+            COUNT(*) OVER(
+                PARTITION BY department
+            ) AS count 
+    FROM employees
+)
+
+SELECT department,
+        AVG(salary) AS median 
+    FROM sep 
+    WHERE dep IN (
+        FLOOR((count+1)/2),
+        CEIL((count+1)/2)
+    )
+    GROUP BY department ; 
 
