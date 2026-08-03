@@ -126,3 +126,86 @@ DROP INDEX idx_dept_salary;
 - Composite Index follows the Leftmost Prefix Rule.
 - Create indexes on frequently searched columns.
 - Avoid indexing every column because indexes slow write operations.
+
+
+# Q50 - Transactions & Isolation Levels
+
+## Transaction
+A transaction is a group of SQL statements executed as a single unit of work.
+
+Either:
+- All operations succeed (COMMIT).
+- All operations fail (ROLLBACK).
+
+---
+
+## ACID Properties
+
+### Atomicity
+- All or nothing.
+
+### Consistency
+- Database remains in a valid state.
+
+### Isolation
+- Concurrent transactions do not interfere.
+
+### Durability
+- Committed data survives crashes.
+
+---
+
+## Transaction Commands
+
+```sql
+BEGIN;
+
+UPDATE accounts
+SET balance = balance - 1000
+WHERE id = 1;
+
+UPDATE accounts
+SET balance = balance + 1000
+WHERE id = 2;
+
+COMMIT;
+
+-- or
+
+ROLLBACK;
+```
+
+---
+
+## Isolation Levels
+
+| Level | Prevents |
+|---------|-------------------------------|
+| Read Uncommitted | Nothing |
+| Read Committed | Dirty Reads |
+| Repeatable Read | Dirty Reads, Non-Repeatable Reads |
+| Serializable | Dirty Reads, Non-Repeatable Reads, Phantom Reads |
+
+---
+
+## Common Problems
+
+### Dirty Read
+Reading data that has not been committed.
+
+### Non-Repeatable Read
+Reading the same row twice gives different values.
+
+### Phantom Read
+Running the same query twice returns different numbers of rows due to INSERT/DELETE.
+
+---
+
+## Interview Takeaways
+
+- COMMIT saves changes.
+- ROLLBACK undoes changes.
+- ACID ensures reliable transactions.
+- Serializable is the safest but slowest isolation level.
+- Read Committed is commonly used.
+- Repeatable Read is MySQL's default isolation level.
