@@ -209,3 +209,64 @@ Running the same query twice returns different numbers of rows due to INSERT/DEL
 - Serializable is the safest but slowest isolation level.
 - Read Committed is commonly used.
 - Repeatable Read is MySQL's default isolation level.
+
+
+# Q51 - Views vs Materialized Views
+
+## What is a View?
+- A View is a saved SQL query.
+- It does not store data.
+- Every time a View is queried, the underlying SQL query is executed.
+
+### Syntax
+
+```sql
+CREATE VIEW department_avg_salary AS
+SELECT department,
+       AVG(salary) AS avg_salary
+FROM employees
+GROUP BY department;
+```
+
+---
+
+## Materialized View
+
+- Stores the actual query result.
+- Faster than a normal View.
+- Needs to be refreshed when underlying data changes.
+
+---
+
+## View vs Materialized View
+
+| View | Materialized View |
+|------|--------------------|
+| Stores Query | Stores Data |
+| Always Up-to-date | Needs Refresh |
+| Slower | Faster |
+| No Extra Storage | Requires Storage |
+
+---
+
+## Updatable View
+
+A View is generally updatable if it:
+
+- Uses a single table.
+- Does not use GROUP BY.
+- Does not use Aggregate Functions.
+- Does not use DISTINCT.
+- Does not use UNION.
+
+Otherwise, it is generally not updatable.
+
+---
+
+## Interview Takeaways
+
+- View = Saved SQL Query.
+- Materialized View = Stored Query Result.
+- Materialized Views improve read performance.
+- Materialized Views require refresh.
+- MySQL does not support Materialized Views natively.
