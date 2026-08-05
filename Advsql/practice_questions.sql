@@ -997,3 +997,27 @@ SELECT department,
     )
     GROUP BY department ; 
 
+-- Q.52 Complex Mixed Problem #1
+WITH customer_summary AS (
+    SELECT c.customer_name,
+           o.customer_id,
+           COUNT(o.order_id) AS total_orders,
+           SUM(o.amount) AS total_spent,
+           AVG(o.amount) AS avg_order,
+           MAX(o.order_date) AS latest_order
+    FROM customers c
+    JOIN orders o
+        ON c.customer_id = o.customer_id
+    GROUP BY c.customer_name, o.customer_id
+)
+
+SELECT customer_name,
+       total_orders,
+       total_spent,
+       avg_order,
+       latest_order,
+       DENSE_RANK() OVER(
+            ORDER BY total_spent DESC
+       ) AS spending_rank
+FROM customer_summary
+ORDER BY spending_rank, customer_name;
