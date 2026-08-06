@@ -1021,3 +1021,34 @@ SELECT customer_name,
        ) AS spending_rank
 FROM customer_summary
 ORDER BY spending_rank, customer_name;
+
+-- Q.53 Complex Mixed Problem #2
+
+WITH customer_orders AS (
+    SELECT c.customer_name,
+           o.order_date,
+           o.amount,
+
+           LAG(o.amount) OVER(
+               PARTITION BY o.customer_id
+               ORDER BY o.order_date
+           ) AS previous_amount,
+
+           DENSE_RANK() OVER(
+               PARTITION BY o.customer_id
+               ORDER BY o.amount DESC
+           ) AS order_rank
+
+    FROM customers c
+    JOIN orders o
+        ON c.customer_id = o.customer_id
+)
+
+SELECT customer_name,
+       order_date,
+       amount,
+       previous_amount,
+       amount - previous_amount AS difference,
+       order_rank
+FROM customer_orders
+ORDER BY customer_name, order_date;
