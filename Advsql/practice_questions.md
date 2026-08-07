@@ -270,3 +270,95 @@ Otherwise, it is generally not updatable.
 - Materialized Views improve read performance.
 - Materialized Views require refresh.
 - MySQL does not support Materialized Views natively.
+
+# Q54 - SQL Debugging & Query Optimization
+
+## Scenario
+
+Given Query:
+
+```sql
+SELECT *
+FROM customers c
+JOIN orders o
+ON c.customer_id = o.customer_id
+WHERE YEAR(order_date) = 2024
+ORDER BY amount;
+```
+
+---
+
+## Problems
+
+### 1. Avoid SELECT *
+
+```sql
+SELECT c.customer_name,
+       o.order_date,
+       o.amount
+```
+
+Reason:
+- Retrieves only required columns.
+- Reduces I/O.
+
+---
+
+### 2. Avoid Functions on Indexed Columns
+
+❌
+
+```sql
+WHERE YEAR(order_date) = 2024
+```
+
+✅
+
+```sql
+WHERE order_date >= '2024-01-01'
+AND order_date < '2025-01-01'
+```
+
+Reason:
+- Allows index usage.
+
+---
+
+### 3. Create Appropriate Indexes
+
+```sql
+CREATE INDEX idx_order_date
+ON orders(order_date);
+```
+
+If joins and filtering are frequent:
+
+```sql
+CREATE INDEX idx_customer_date
+ON orders(customer_id, order_date);
+```
+
+---
+
+### 4. Verify Using EXPLAIN
+
+```sql
+EXPLAIN
+SELECT ...
+```
+
+Check:
+
+- Execution Plan
+- Index Usage
+- Rows Scanned
+
+---
+
+## Interview Takeaways
+
+- Avoid `SELECT *`.
+- Avoid functions on indexed columns.
+- Use range conditions for dates.
+- Create indexes on frequently filtered and joined columns.
+- Always verify optimization using `EXPLAIN`.
