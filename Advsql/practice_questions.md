@@ -362,3 +362,106 @@ Check:
 - Use range conditions for dates.
 - Create indexes on frequently filtered and joined columns.
 - Always verify optimization using `EXPLAIN`.
+
+# Q55 - Final Amazon/Microsoft SQL Challenge
+
+## Main Concepts
+
+- JOIN
+- CTE
+- LAG()
+- ROW_NUMBER()
+- CASE
+- GROUP BY
+- Aggregate Functions
+- DENSE_RANK()
+
+## Approach
+
+### 1. Order Level
+
+Use `LAG()` to find the previous order amount for each customer.
+
+```sql
+LAG(amount) OVER (
+    PARTITION BY customer_id
+    ORDER BY order_date
+)
+```
+
+Use `ROW_NUMBER()` to identify the latest order.
+
+```sql
+ROW_NUMBER() OVER (
+    PARTITION BY customer_id
+    ORDER BY order_date DESC
+)
+```
+
+---
+
+### 2. Customer Level
+
+Use `GROUP BY customer_id, customer_name` to calculate:
+
+- Total orders → `COUNT()`
+- Total spending → `SUM()`
+- Average order → `AVG()`
+- First order → `MIN()`
+- Last order → `MAX()`
+
+Use `CASE` to extract information from the latest order.
+
+---
+
+### 3. Final Ranking
+
+Use:
+
+```sql
+DENSE_RANK() OVER (
+    ORDER BY total_spent DESC
+)
+```
+
+to rank customers by total spending while including ties.
+
+---
+
+## Key Interview Insight
+
+Always identify the **level of each calculation**.
+
+| Calculation | Level |
+|---|---|
+| `LAG()` | Order level |
+| `ROW_NUMBER()` | Order level |
+| `SUM()` | Customer level |
+| `AVG()` | Customer level |
+| `MIN()` / `MAX()` | Customer level |
+| `DENSE_RANK()` | Customer level |
+
+## General Strategy
+
+```text
+Understand the output
+        ↓
+Identify the data level
+        ↓
+Calculate row-level metrics
+        ↓
+Aggregate to required level
+        ↓
+Apply window functions
+        ↓
+Final result
+```
+
+## Interview Takeaway
+
+Complex SQL problems are usually solved by breaking them into
+multiple logical stages using CTEs instead of trying to write
+everything in one SELECT.
+
+Q55 combines most of the important SQL interview patterns learned
+throughout the roadmap.
