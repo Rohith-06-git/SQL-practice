@@ -1052,3 +1052,87 @@ SELECT customer_name,
        order_rank
 FROM customer_orders
 ORDER BY customer_name, order_date;
+
+
+-- Q55 - Final Amazon/Microsoft SQL Challenge
+
+WITH order_details AS (
+    SELECT
+        o.customer_id,
+        o.order_date,
+        o.amount,
+
+        -- Previous order amount for each customer
+        LAG(o.amount) OVER (
+            PARTITION BY o.customer_id
+            ORDER BY o.order_date
+        ) AS previous_order_amount,
+
+        -- Identify the latest order of each customer
+        ROW_NUMBER() OVER (
+            PARTITION BY o.customer_id
+            ORDER BY o.order_date DESC
+        ) AS latest_order
+
+    FROM orders o
+),
+
+customer_summary AS (
+    SELECT
+        c.customer_id,
+        c.customer_name,
+
+        COUNT(o.order_date) AS total_orders,
+
+        SUM(o.amount) AS total_spent,
+
+        AVG(o.amount) AS average_order_amount,
+
+        MIN(o.order_date) AS first_order_date,
+
+        MAX(o.order_date) AS last_order_date,
+
+        -- Get amount of latest order
+        MAX(
+            CASE
+                WHEN o.latest_order = 1
+                THEN o.amount
+            END
+        ) AS latest_amount,
+
+        -- Get previous amount before latest order
+        MAX(
+            CASE
+                WHEN o.latest_order = 1
+                THEN o.previous_order_amount
+            END
+        ) AS previous_order_amount
+
+    FROM customers c
+    JOIN order_details o
+        ON c.customer_id = o.customer_id
+
+    GROUP BY
+        c.customer_id,
+        c.customer_name
+)
+
+SELECT
+    customer_name,
+    total_orders,
+    total_spent,
+    average_order_amount,
+    first_order_date,
+    last_order_date,
+    previous_order_amount,
+
+    latest_amount - previous_order_amount
+        AS difference_from_previous_order,
+
+    DENSE_RANK() OVER (
+        ORDER BY total_spent DESC
+    ) AS spending_rank
+
+FROM customer_summary
+
+ORDER BY spending_rank, customer_name;
